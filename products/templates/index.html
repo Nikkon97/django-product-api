@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product List</title>
+</head>
+<body>
+<h1>Product List</h1>
+<form id="product-form">
+    <label for="name">Name:</label><br>
+    <input type="text" id="name" name="name" required><br>
+    <label for="description">Description:</label><br>
+    <textarea id="description" name="description" required></textarea><br>
+    <label for="price">Price:</label><br>
+    <input type="number" id="price" name="price" step="0.01" required><br><br>
+    <button type="submit">Submit</button>
+</form>
+
+<h2>Products:</h2>
+<table id="products-table" border="1">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Price</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<script>
+    document.getElementById('product-form').addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const name = document.getElementById('name').value;
+        const description = document.getElementById('description').value;
+        const price = document.getElementById('price').value;
+
+        const response = await fetch('/api/products/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: name,
+                description: description,
+                price: price
+            })
+        });
+
+        if (response.ok) {
+            alert('Product added successfully!');
+            loadProducts();  // Обновляем список продуктов
+        } else {
+            const errorData = await response.json();
+            alert(`Error: ${JSON.stringify(errorData)}`);
+        }
+    });
+
+    async function loadProducts() {
+        const response = await fetch('/api/products/');
+        const products = await response.json();
+
+        const tbody = document.querySelector('#products-table tbody');
+        tbody.innerHTML = '';  // Очищаем старые записи
+
+        products.forEach(product => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                    <td>${product.name}</td>
+                    <td>${product.description}</td>
+                    <td>${product.price}</td>
+                `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Загружаем список продуктов при загрузке страницы
+    loadProducts();
+</script>
+</body>
+</html>
